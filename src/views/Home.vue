@@ -1,7 +1,24 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <v-row>
+      <v-col
+
+      >
+        <v-card color="grey lighten-4" flat>
+          <v-toolbar color="secondary" :dark="true">
+            <v-toolbar-title>Список доступных игр</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn color="success">
+              <v-icon left>mdi-plus</v-icon> Создать новую
+            </v-btn>
+          </v-toolbar>
+        </v-card>
+        <v-card>
+          <v-skeleton-loader v-for="$i in 5" :key="$i" type="list-item" class="mx-auto"></v-skeleton-loader>
+        </v-card>
+      </v-col>
+    </v-row>
+
   </div>
 </template>
 
