@@ -5,11 +5,9 @@
       color="primary"
       dark
     >
-      
+
 
       <v-spacer></v-spacer>
-
-
     </v-app-bar>
 
     <v-content>
