@@ -15,10 +15,11 @@
 
     <div v-if="!loading && !error">
       <div class="game__message">
+		<div class="game__message__day" v-if="game.stateData.day">День {{game.stateData.day}}</div>
         <transition name="fade">
-          <div class="game__message__inner" :key="game.stateData.stateName">
-            {{game.stateData.message}}
-          </div>
+          <div class="game__message__inner" :key="game.stateData.stateName">	  
+            {{game.stateData.message}}		
+		  </div>
         </transition>
       </div>
 
@@ -44,8 +45,8 @@
             Список мафиози
           </div>
           <div class="game__overlay__users-list">
-            <div class="game__overlay__user-container">
-              <v-card class="game__user game__user--overlay" :style="{backgroundImage: `url(${getCardBackground(user)}`}" :key="$index" v-for="(user, $index) in getUsersByRoles(['MAFIA', 'MAFIA_BOSS'])">
+            <div class="game__overlay__user-container"  :key="$index" v-for="(user, $index) in getUsersByRoles(['MAFIA', 'MAFIA_BOSS'])">
+              <v-card class="game__user game__user--overlay" :style="{backgroundImage: `url(${getCardBackground(user)}`}">
                 <div class="game__user__inner">
                   <v-card-title class="justify-center game__user__name">{{user.name}} <span class="font-weight-light" v-if="game.yourId === user.id"> (вы)</span></v-card-title>
                   <v-icon size="5em">{{getRoleIcon(roles[user.id])}}</v-icon>
@@ -56,9 +57,29 @@
           </div>
         </div>
       </div>
+	  
+	  <div class="game__overlay" v-if="game && game.stateData && game.stateData.stateName === 'STATE_SHERIFF' && sheriffData">
+        <div class="game__overlay__inner">
+          <div class="game__overlay__title">
+			<div v-if="game.canEdit">Шериф проверил игрока  {{getName(sheriffData.id)}} - он {{getRoleName(sheriffData.role)}}</div>
+			<div v-else> Игрок {{getName(sheriffData.id)}} - {{getRoleName(sheriffData.role)}}</div>
+           
+          </div>
+          <div class="game__overlay__user-container">
+            <v-card class="game__user game__user--overlay" :style="{backgroundImage: `url(${getCardBackgroundByRole(sheriffData.role)}`}">
+              <div class="game__user__inner">
+				<v-card-title class="justify-center game__user__name">{{getName(sheriffData.id)}}</v-card-title>
+                  
+                <v-icon size="5em">{{getRoleIcon(sheriffData.role)}}</v-icon>
+                <v-card-text class="game__user__role-name">{{getRoleName(sheriffData.role)}}</v-card-text>
+              </div>
+            </v-card>
+          </div>
+        </div>
+      </div>
 
 
-      <v-alert  color="#2A3B4D" dark class="ma-3 " v-if="nightResults">
+      <v-alert  color="#2A3B4D" dark class="ma-3" v-if="nightResults">
         {{getNightKilled}}
       </v-alert>
 
@@ -89,6 +110,9 @@
                   <v-icon size="1em" class="mr-1 white--text">mdi-alert</v-icon>
                   Не подключен
                 </v-card-text>
+				<div class="game__user__poll-count" v-if="poll && getPollResults(user).length > 0">
+					{{getPollResults(user).length}}
+				</div>
                 <v-card-text class="game__user__poll-results" v-if="poll && getPollResults(user).length > 0">
                   <div class="game__user__poll-results__item" :key="$index" v-for="(result, $index) in getPollResults(user)">
                     {{result}}
@@ -126,6 +150,18 @@
       }
     },
     sockets: {
+	  sheriff_results(results) {
+		this.sheriffData = results;
+	  },
+	  user_state({id, state}) {
+		 let user = this.users.list.filter(user => user.id === id)[0];
+		 if (user) {
+			user.state = state;
+		 }
+	  },
+	  close_poll() {
+		this.poll = null;
+	  },
       voting_results(data) {
         this.nightResults = null;
         this.votingResults = data;
@@ -171,7 +207,7 @@
     },
     methods: {
       getUsersByRoles(roles) {
-        return this.users.list ? this.users.list.filter(user => roles.indexOf(this.roles[user.id]) !== -1) : [];
+		return this.users.list ? this.users.list.filter(user => roles.indexOf(this.roles[user.id]) !== -1) : [];
       },
       getCardBackgroundByRole(role) {
         if (!role || role === "UNKNOWN") {
@@ -216,7 +252,7 @@
         if (!this.poll) {
           return false;
         }
-        return this.poll.variants.indexOf(user.id) !== -1 && user.id !== this.game.yourId;
+        return this.poll.variants.indexOf(user.id) !== -1; // && user.id !== this.game.yourId;
       },
       getRoleIcon(role) {
         let icon = "";
@@ -236,7 +272,7 @@
           case "DOCTOR":
             icon = "mdi-doctor";
             break;
-          case "DETECTIVE":
+          case "SHERIFF":
             icon = "mdi-magnify-plus-outline";
             break;
           case "UNKNOWN":
@@ -258,12 +294,18 @@
           case "MAFIA_BOSS":
             name = "Мафия (босс)";
             break;
+		  case "DOCTOR":
+            name = "Доктор";
+            break;
+		  case "SHERIFF":
+            name = "Шериф";
+            break;
           case "HOST":
             name = "Ведущий";
             break;
           case "UNKNOWN":
           default:
-            name = "???";
+			name = "";
             break;
         }
         return name;
@@ -285,7 +327,8 @@
         roles: {},
         poll: null,
         nightResults: null,
-        votingResults: null
+        votingResults: null,
+		sheriffData: null
       }
     },
     async mounted() {
