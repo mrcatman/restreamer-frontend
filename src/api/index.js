@@ -83,7 +83,8 @@ const Games = {
 	getById: (id) => getRequest(`games/${id}`),
 	add: (data) => postRequest('games', data),
 	join: (id, data) => postRequest(`games/${id}/join`, data),
-	next: (id) => postRequest(`games/${id}/next`, null, true)
+	next: (id) => postRequest(`games/${id}/next`, null, true),
+	sendPollResults: (id, data) => postRequest(`games/${id}/poll`, data, true)
 }
 
 export {

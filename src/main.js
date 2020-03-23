@@ -8,7 +8,7 @@ import vuetify from './plugins/vuetify';
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import '@mdi/font/css/materialdesignicons.css'
 import 'sweetalert2/src/sweetalert2.scss'
-import './css/main.css'
+import './css/main.scss'
 Vue.config.productionTip = false
 
 Vue.use(new VueSocketIO({

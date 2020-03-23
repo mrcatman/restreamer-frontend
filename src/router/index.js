@@ -16,7 +16,6 @@ const routes = [
     name: 'Game',
     component: Game,
     props: (route) => (() => {
-      console.log(route);
       return route.params;
     })
   },
