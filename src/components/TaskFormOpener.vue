@@ -14,6 +14,8 @@
 			  <v-text-field v-model="data.name" label="Название" :error-messages="errors.name"></v-text-field>
 			  <v-switch v-model="data.needRecord" label="Записывать в файл" :error-messages="errors.needRecord"></v-switch>
 			  <v-text-field v-model="data.url" label="URL потока*" required :error-messages="errors.url"></v-text-field>
+			  <v-switch v-model="data.useYTDL" label="Использовать youtube-dl" :error-messages="errors.useYTDL"></v-switch>
+
 			  <v-input label="Время начала" :error-messages="errors.startTime">
 				  <datetime format="DD/MM/YYYY H:i" v-model="data.startTime"></datetime>
 			  </v-input>
@@ -30,8 +32,10 @@
 						  <v-btn color="red" @click="data.endpoints.splice($index, 1)">Удалить</v-btn>
 					  </v-col>
 				  </v-row>
-				  <v-btn color="green" @click="data.endpoints.push({url: ''})">Добавить еще адрес</v-btn>
+				  <v-btn color="green" @click="data.endpoints.push({url: ''})">Добавить адрес</v-btn>
 			  </v-card>
+
+			  <v-switch v-model="data.disableAutolaunch" label="Отключить автозапуск по таймеру" :error-messages="errors.disableAutolaunch"></v-switch>
 
 			  <v-card-actions>
 				  <v-btn color="blue" @click="save" :loading="loading">Сохранить</v-btn>
@@ -49,18 +53,25 @@ export default {
 	components: {
 		datetime
 	},
+	watch: {
+		opened() {
+			this.errors = {};
+		}
+	},
 	methods: {
 		setDefaultData() {
 			this.visible = false;
 			this.data = {
 				name: '',
 				needRecord: false,
+				disableAutolaunch: false,
+				useYTDL: false,
 				url: '',
 				endpoints: [
 					{url: ''}
 				],
 				startTime: null,
-				endTime: null
+				endTime: null,
 			};
 			this.$nextTick(() => {
 				this.visible = true;
@@ -70,8 +81,10 @@ export default {
 			let data = JSON.parse(JSON.stringify(item));
 			//data.endpoints = data.endpoints.map(endpoint => endpoint.url);
 			data.startTime = this.formatDate(data.startTime);
-			if (data.endTime && data.endTime !== '') {
+			if (data.endTime && data.endTime !== '' && data.endTime !== 0) {
 				data.endTime = this.formatDate(data.endTime);
+			} else {
+				data.endTime = '';
 			}
 			this.data = data;
 			this.opened = true;
@@ -104,6 +117,8 @@ export default {
 			data: {
 				name: '',
 				needRecord: false,
+				disableAutolaunch: false,
+				useYTDL: false,
 				url: '',
 				endpoints: [
 					{url: ''}

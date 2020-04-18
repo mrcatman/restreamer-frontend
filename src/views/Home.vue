@@ -46,10 +46,13 @@
                 <v-list-item-action>
                   <v-row>
                     <v-col>
-                      <v-btn color="black" class="white--text" @click="toggle(item)">Статус задач</v-btn>
+                      <v-btn color="black" class="white--text" @click="toggle(item)">Статус</v-btn>
                     </v-col>
                     <v-col>
                       <v-btn color="blue" @click="open(item)">Редактировать</v-btn>
+                    </v-col>
+                    <v-col>
+                      <v-btn text color="red" @click="deleteTask(item)">Удалить</v-btn>
                     </v-col>
                   </v-row>
                 </v-list-item-action>
@@ -64,7 +67,6 @@
                     <div class="overline">Задачи</div>
                  </v-list-item-content>
                 </v-list-item>
-
                 <v-list-item two-line v-for="(endpoint, $endpointIndex) in item.endpoints" :key="$endpointIndex">
                   <v-list-item-content >
                     <v-list-item-title class="body-2">{{endpoint.url}}</v-list-item-title>
@@ -77,10 +79,13 @@
                         <v-btn text @click="showLog(endpoint.id)">Лог</v-btn>
                       </v-col>
                       <v-col>
-                        <v-btn color="green" @click="startEndpoint(item, endpoint)">Запустить</v-btn>
+                        <v-btn :color="'green ' + (endpoint.state === 'STATE_STARTED' ? 'lighten-3' : '')" class="white--text" @click="startEndpoint(item, endpoint)">Запустить</v-btn>
                       </v-col>
                       <v-col>
-                        <v-btn color="red" @click="stopEndpoint(item, endpoint)">Остановить</v-btn>
+                        <v-btn :color="'red '+ (endpoint.state !== 'STATE_STARTED' ? 'lighten-3' : '')" class="white--text" @click="stopEndpoint(item, endpoint)">Остановить</v-btn>
+                      </v-col>
+                      <v-col>
+                        <v-btn text color="red" @click="deleteEndpoint(item, endpoint)">Удалить</v-btn>
                       </v-col>
                     </v-row>
                   </v-list-item-action>
@@ -90,6 +95,12 @@
                   <v-list-item-content >
                     <v-list-item-title class="body-2">Запись в файл</v-list-item-title>
                     <v-list-item-title class="body-1 font-weight-bold" :class="{'red--text': item.recordState === 'STATE_ERROR'}">Статус: {{getStateName(item.recordState)}}</v-list-item-title>
+                    <div>
+                      <div class="body-1 mb-3 mt-6">Файлы:</div>
+                      <v-chip @click:close="deleteFile(file, item)" class="mb-3 mr-3" close outlined target="_blank" :href="BASE_URL + 'records/' + file.url" v-for="(file, $index) in item.files">
+                        {{file.url}}
+                      </v-chip>
+                    </div>
                   </v-list-item-content>
                   <v-list-item-action>
                     <v-row>
@@ -97,17 +108,19 @@
                         <v-btn text @click="showLog('record_' + item.id)">Лог</v-btn>
                       </v-col>
                       <v-col>
-                        <v-btn color="green" @click="startRecord(item)">Запустить</v-btn>
+                        <v-btn :color="'green ' + (item.recordState === 'STATE_STARTED' ? 'lighten-3' : '')" class="white--text" @click="startRecord(item)">Запустить</v-btn>
                       </v-col>
                       <v-col>
-                        <v-btn color="red" @click="stopRecord(item)">Остановить</v-btn>
+                        <v-btn :color="'red '+ (item.recordState !== 'STATE_STARTED' ? 'lighten-3' : '')" class="white--text" @click="stopRecord(item)">Остановить</v-btn>
                       </v-col>
                     </v-row>
                   </v-list-item-action>
                 </v-list-item>
-
                 <v-card-actions>
-
+                  <div class="pa-2">
+                    <v-btn color="green" class="white--text" @click="startAll(item)">Запустить всё</v-btn>
+                    <v-btn color="red" class="white--text ml-3" @click="stopAll(item)">Остановить всё</v-btn>
+                  </div>
                 </v-card-actions>
               </v-card>
             </div>
@@ -121,7 +134,7 @@
 
 </template>
 <script>
-import { Tasks } from '@/api';
+import { Tasks, BASE_URL } from '@/api';
 import TaskFormOpener from '@/components/TaskFormOpener';
 
 export default {
@@ -157,9 +170,30 @@ export default {
             this.tasks = await Tasks.get();
             this.loading = false;
         },
+        deleteFile(file, item) {
+            if (!confirm("Вы уверены?")) {
+                return;
+            }
+            this.$set(item, '_loading', true);
+            Tasks.deleteFile(file).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
+        },
+        deleteTask(item) {
+            if (!confirm(item.files && item.files.length > 0 ? "Вы уверены? Все файлы записей тоже будут удалены." : "Вы уверены?")) {
+                return;
+            }
+            this.$set(item, '_loading', true);
+            Tasks.delete(item).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
+        },
+        deleteEndpoint(item, endpoint) {
+            if (!confirm("Вы уверены?")) {
+                return;
+            }
+            this.$set(item, '_loading', true);
+            Tasks.deleteEndpoint(item, endpoint).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
+        },
         stopEndpoint(item, endpoint) {
             this.$set(item, '_loading', true);
-            Tasks.startEndpoint(item, endpoint).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
+            Tasks.stopEndpoint(item, endpoint).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
         },
         startEndpoint(item, endpoint) {
             this.$set(item, '_loading', true);
@@ -172,6 +206,14 @@ export default {
         startRecord(item) {
             this.$set(item, '_loading', true);
             Tasks.startRecord(item).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
+        },
+        stopAll(item) {
+            this.$set(item, '_loading', true);
+            Tasks.stopAll(item).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
+        },
+        startAll(item) {
+            this.$set(item, '_loading', true);
+            Tasks.startAll(item).then(res => {item._loading = false;this.reload();}).catch(e => {item._loading = false;})
         },
         toggle(item) {
             this.$set(this.toggled, item.id, !this.toggled[item.id]);
@@ -187,7 +229,7 @@ export default {
                 return 'Работает';
             }
             if (state === 'STATE_ENDED') {
-                return 'Закончился';
+                return 'Закончилось';
             }
             return '';
         },
@@ -210,6 +252,7 @@ export default {
     },
 	data() {
 		return {
+            BASE_URL,
             selectedTask: null,
 			loading: true,
 			tasks: [],

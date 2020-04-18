@@ -12,7 +12,7 @@ import './css/main.scss'
 Vue.config.productionTip = false
 
 Vue.use(new VueSocketIO({
-  connection: 'http://localhost:8082',
+  connection: '',
 }))
 
 new Vue({

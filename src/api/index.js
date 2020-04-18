@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8082/";
+const BASE_URL = "";
 import Swal from 'sweetalert2/dist/sweetalert2.js'
 
 const getRequest = (url, data = null, showErrors = false) => {
@@ -88,8 +88,12 @@ const Tasks = {
 	stopAll: (task) => postRequest('tasks/'+task.id+'/stop-all', {}, true),
 	startEndpoint: (task, endpoint) => postRequest('tasks/'+task.id+'/start/' + endpoint.id, {}, true),
 	stopEndpoint: (task, endpoint) => postRequest('tasks/'+task.id+'/stop/' + endpoint.id, {}, true),
+	delete: (task) => postRequest('tasks/delete/'+task.id, {}, true),
+	deleteEndpoint: (task, endpoint) => postRequest('tasks/delete-endpoint/' + endpoint.id, {}, true),
+	deleteFile: (file) => postRequest('tasks/delete-file/' + file.id, {}, true),
 }
 
 export {
-	Tasks
+	Tasks,
+	BASE_URL
 }
