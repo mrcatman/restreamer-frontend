@@ -1,8 +1,7 @@
 <template>
   <v-app dark >
-
-    <v-content class="game">
-        <router-view/>
+    <v-content>
+      <router-view/>
     </v-content>
   </v-app>
 </template>

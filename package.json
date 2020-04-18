@@ -1,5 +1,5 @@
 {
-  "name": "mafia-frontend",
+  "name": "restreamer-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,6 +16,7 @@
     "vue-axios": "^2.1.5",
     "vue-router": "^3.1.5",
     "vue-socket.io": "^3.0.7",
+    "vuejs-datetimepicker": "^1.1.13",
     "vuetify": "^2.2.11",
     "vuex": "^3.1.2"
   },

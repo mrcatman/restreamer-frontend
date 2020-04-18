@@ -78,15 +78,18 @@ const postRequest = (url, data = null, showErrors = false) => {
 	})
 }
 
-const Games = {
-	get: () => getRequest('games'),
-	getById: (id) => getRequest(`games/${id}`),
-	add: (data) => postRequest('games', data),
-	join: (id, data) => postRequest(`games/${id}/join`, data),
-	next: (id) => postRequest(`games/${id}/next`, null, true),
-	sendPollResults: (id, data) => postRequest(`games/${id}/poll`, data, true)
+const Tasks = {
+	getLog: (logId) => getRequest('tasks/log/'+logId),
+	get: () => getRequest('tasks'),
+	add: (data) => postRequest('tasks', data),
+	startRecord: (task) => postRequest('tasks/'+task.id+'/start/record', {}, true),
+	stopRecord: (task) => postRequest('tasks/'+task.id+'/stop/record', {}, true),
+	startAll: (task) => postRequest('tasks/'+task.id+'/start-all', {}, true),
+	stopAll: (task) => postRequest('tasks/'+task.id+'/stop-all', {}, true),
+	startEndpoint: (task, endpoint) => postRequest('tasks/'+task.id+'/start/' + endpoint.id, {}, true),
+	stopEndpoint: (task, endpoint) => postRequest('tasks/'+task.id+'/stop/' + endpoint.id, {}, true),
 }
 
 export {
-	Games
+	Tasks
 }
